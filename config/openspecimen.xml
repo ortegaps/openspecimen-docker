@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context docBase="/opt/openspecimen/openspecimen.war" reloadable="false">
+    
+    <!-- Ubicación del archivo de propiedades -->
+    <Environment
+        name="config/openspecimen"
+        value="/usr/local/tomcat/conf/openspecimen.properties"
+        type="java.lang.String"
+        override="false"/>
+    
+    <!-- DataSource MySQL -->
+    <Resource 
+        name="jdbc/openspecimen" 
+        auth="Container" 
+        type="javax.sql.DataSource"
+        factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+        driverClassName="com.mysql.cj.jdbc.Driver"
+        url="jdbc:mysql://mysql:3306/openspecimen?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;useUnicode=true&amp;characterEncoding=UTF-8&amp;serverTimezone=UTC"
+        username="openspecimen"
+        password="sgs2026"
+        maxActive="100"
+        maxIdle="30"
+        maxWait="10000"
+        testOnBorrow="true"
+        validationQuery="SELECT 1"
+        validationInterval="30000"
+    />
+</Context>

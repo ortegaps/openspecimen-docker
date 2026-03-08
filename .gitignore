@@ -1,0 +1,27 @@
+# Código fuente OpenSpecimen (es un repo separado, se clona aparte)
+src/
+
+# Volumes (datos persistentes)
+volumes/
+
+# Backups locales
+backups/
+
+# Archivos temporales
+configs/
+init-sql/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Env con passwords reales
+.env

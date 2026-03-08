@@ -1,0 +1,57 @@
+services:
+  mysql:
+    image: mysql:8.0.26
+    container_name: openspecimen-mysql
+    command:
+      - --character-set-server=utf8
+      - --collation-server=utf8_general_ci
+      - --lower_case_table_names=1
+      - --log_bin_trust_function_creators=1
+      - --default-authentication-plugin=mysql_native_password
+      - --sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+      - --max_allowed_packet=256M
+      - --innodb_default_row_format=dynamic
+      - --innodb_file_per_table=1
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: openspecimen
+      MYSQL_USER: openspecimen
+      MYSQL_PASSWORD: sgs2026
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./volumes/mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "openspecimen", "-psgs2026"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 60s
+    networks:
+      - openspecimen-net
+    restart: unless-stopped
+
+  openspecimen:
+    image: ortegaps/openspecimen:dev
+    container_name: openspecimen-app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      - JAVA_OPTS=-Xms512m -Xmx3g -Dapp.home=/usr/local/tomcat
+      - CATALINA_OPTS=-Dorg.apache.el.parser.SKIP_IDENTIFIER_CHECK=true
+    volumes:
+      - ./config/openspecimen.xml:/usr/local/tomcat/conf/Catalina/localhost/openspecimen.xml:ro
+      - ./config/openspecimen.properties:/usr/local/tomcat/conf/openspecimen.properties:ro
+      - ./volumes/openspecimen_data:/opt/openspecimen/data
+      - ./volumes/openspecimen_plugins:/opt/openspecimen/plugins
+      - ./volumes/tomcat_logs:/usr/local/tomcat/logs
+    networks:
+      - openspecimen-net
+    restart: unless-stopped
+
+networks:
+  openspecimen-net:
+    driver: bridge

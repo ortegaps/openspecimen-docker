@@ -1,0 +1,65 @@
+# =====================================================
+# OpenSpecimen Docker Build
+# Fork: ortegaps/openspecimen
+# Preparado para CI/CD
+# =====================================================
+
+# Stage 1: Builder
+FROM eclipse-temurin:17-jdk AS builder
+
+LABEL maintainer="ortegaps@github.com"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git curl wget unzip nodejs npm \
+    && rm -rf /var/lib/apt/lists/* \
+    && npm install -g bower grunt-cli
+
+ENV GRADLE_VERSION=7.5.1
+RUN wget -q https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -O /tmp/gradle.zip \
+    && unzip -q /tmp/gradle.zip -d /opt/gradle \
+    && rm /tmp/gradle.zip
+
+ENV GRADLE_HOME=/opt/gradle/gradle-${GRADLE_VERSION}
+ENV PATH=${GRADLE_HOME}/bin:${PATH}
+
+WORKDIR /opt/openspecimen
+COPY src/openspecimen/ /opt/openspecimen/
+
+# Build
+RUN cd www && npm install && bower install --allow-root && cd .. \
+    && gradle clean build -x test --no-daemon
+
+# Stage 2: Runtime
+FROM tomcat:9.0-jdk17-temurin
+
+ENV CATALINA_HOME=/usr/local/tomcat
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
+
+# MySQL Connector J (versión 8.x para compatibilidad)
+RUN wget -q https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/8.0.33/mysql-connector-j-8.0.33.jar \
+    -O ${CATALINA_HOME}/lib/mysql-connector-j-8.0.33.jar
+
+# Copiar WAR fuera de webapps (se despliega via context descriptor)
+COPY --from=builder /opt/openspecimen/build/libs/openspecimen.war /opt/openspecimen/openspecimen.war
+
+# Crear estructura de directorios
+RUN mkdir -p ${CATALINA_HOME}/conf/Catalina/localhost \
+    /opt/openspecimen/data/logs \
+    /opt/openspecimen/plugins \
+    && rm -rf ${CATALINA_HOME}/webapps/*
+
+# Usuario no-root
+RUN groupadd -r openspecimen \
+    && useradd -r -g openspecimen -d /opt/openspecimen openspecimen \
+    && chown -R openspecimen:openspecimen ${CATALINA_HOME} /opt/openspecimen
+
+USER openspecimen
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 \
+    CMD curl -f http://localhost:8080/openspecimen/ || exit 1
+
+CMD ["catalina.sh", "run"]

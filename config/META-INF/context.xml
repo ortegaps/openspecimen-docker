@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+    <Resource name="jdbc/openspecimen"
+              auth="Container"
+              type="javax.sql.DataSource"
+              driverClassName="com.mysql.jdbc.Driver"
+              url="jdbc:mysql://openspecimen-mysql:3306/openspecimen?useSSL=false&amp;allowPublicKeyRetrieval=true"
+              username="openspecimen"
+              password="sgs2026"
+              maxActive="100"
+              maxIdle="30"
+              maxWait="10000"
+              testOnBorrow="true"
+              validationQuery="select 1 from dual"/>
+    <Environment
+              name="config/openspecimen"
+              value="/usr/local/tomcat/conf/openspecimen.properties"
+              type="java.lang.String"/>
+</Context>
