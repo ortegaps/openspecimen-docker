@@ -31,7 +31,7 @@ services:
       - openspecimen-net
     restart: unless-stopped
 
-openspecimen:
+  openspecimen:
     image: ortegaps/openspecimen:dev
     build:
       context: .
