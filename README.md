@@ -106,7 +106,7 @@ jobs:
 ./scripts/backup.sh
 
 # Restore
-./scripts/restore.sh backup_20260308.tar.gz
+./manage.sh restore-db backups/openspecimen_backup_20260308_120000_db.sql
 ```
 
 ## Troubleshooting

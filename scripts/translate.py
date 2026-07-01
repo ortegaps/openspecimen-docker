@@ -124,7 +124,8 @@ def translate_properties_file(input_path, output_path):
     print(f"✓ Guardado en: {output_path}")
 
 def main():
-    base_path = "/root/perplexity/openspecimen/src/openspecimen"
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    base_path = os.path.join(repo_root, "src", "openspecimen")
     
     print("\n" + "="*60)
     print("   TRADUCTOR OPENSPECIMEN - Inglés a Español")
